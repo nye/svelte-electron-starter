@@ -6,6 +6,8 @@
 
 	import { isLoading } from './stores/ui';
 
+	import { GlobalStyle } from './style/GlobalStyle.svelte';
+
 	// LOADING //////////////////////////
 
 	isLoading.set(true);
@@ -32,7 +34,6 @@
 		<Router/>
 	</main>
 </div>
-
 
 <style lang="scss">
 	.wrapper{
