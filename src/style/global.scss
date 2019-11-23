@@ -1,7 +1,7 @@
 @import "fonts";
 @import "vars";
 @import "normalize";
-@import "coses";
+@import "stuff";
 
 @-ms-viewport {
 	width: device-width;
@@ -65,7 +65,6 @@ h1{
 input, button, textarea, :focus {
     outline: none !important; // You should add some other style for :focus to help UX/a11y
 }
-
 a:not([draggable=true]), img:not([draggable=true]) {
     -webkit-user-drag: none;
     user-drag: none; /* Technically not supported in Electron yet */
@@ -77,7 +76,6 @@ a[href^="file://"] {
     -webkit-user-drag: auto;
     user-drag: auto; /* Technically not supported in Electron yet */
 }
-
 /////////////////
 
 a{
@@ -90,9 +88,4 @@ a{
 		text-decoration: none;
 		transition: color 150ms var(--cubic-bezier);
 	}
-}
-
-.hidden{
-	opacity: 0;
-	visibility: hidden;
 }
