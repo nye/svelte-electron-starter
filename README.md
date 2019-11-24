@@ -1,3 +1,14 @@
+My starter to built Electron apps with Svelte.
+
+* Electron  
+* Svelte  
+* Rollup.js  
+* Preprocess (svelte-preprocess) for SCSS in components and globally  
+* Live reload  
+* Router (with hash routing)  
+* Some Electron optimizations (Icons, platform install options, Remember window size and position, Confirm before quit if `DocumentEdited`, Save app settings, [InterUI](https://rsms.me/inter/) font, ...)  
+
+
 ## Get started
 
 Install the dependencies...
