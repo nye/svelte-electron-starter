@@ -6,7 +6,7 @@
 
 	import { isLoading } from './stores/ui';
 
-	import { GlobalStyles } from './styles/GlobalStyles.svelte';
+	import GlobalStyles from './styles/GlobalStyles.svelte';
 
 	// LOADING //////////////////////////
 
