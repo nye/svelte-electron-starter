@@ -1,78 +1,18 @@
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const settings = require('electron-settings');
+const isDev = require('electron-is-dev');
+const setupApplicationMenu = require('./menu').setupApplicationMenu;
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 let windowState = {};
 
-// Create simple menu for easy devtools access, and for demo
-const applicationMenu = [
-	{
-	  label: app.name,
-	  submenu: [
-		{
-			label: 'About ' + app.name,
-			role: 'about'
-		},
-		/*{
-			type: 'separator'
-		},
-		{
-			label: 'Open Dev Tools',
-			click() {
-				mainWindow.openDevTools();
-			},
-		},*/
-		{
-			type: 'separator'
-		},
-		{
-			label: 'Quit',
-			accelerator: 'CmdOrCtrl+Q',
-			click: () => { app.quit(); }
-		}
-	  ],
-	},
-	{
-		label: 'Edit',
-		submenu: [{
-		  label: 'Undo',
-		  accelerator: 'CmdOrCtrl+Z',
-		  selector: 'undo:'
-		}, {
-		  label: 'Redo',
-		  accelerator: 'Shift+CmdOrCtrl+Z',
-		  selector: 'redo:'
-		}, {
-		  type: 'separator'
-		}, {
-		  label: 'Cut',
-		  accelerator: 'CmdOrCtrl+X',
-		  selector: 'cut:'
-		}, {
-		  label: 'Copy',
-		  accelerator: 'CmdOrCtrl+C',
-		  selector: 'copy:'
-		}, {
-		  label: 'Paste',
-		  accelerator: 'CmdOrCtrl+V',
-		  selector: 'paste:'
-		}, {
-		  label: 'Select All',
-		  accelerator: 'CmdOrCtrl+A',
-		  selector: 'selectAll:'
-		}]
-	  }
-  ];
-
-function createWindow() {
-	const mode = process.env.NODE_ENV;
-
+function createMainWindow(){
 	windowState = settings.get('windowState', {});
 
-    mainWindow = new BrowserWindow({
+	mainWindow = new BrowserWindow({
 		webPreferences: {
 			nodeIntegration: false,
 			preload: __dirname + '/preload.js'
@@ -88,36 +28,21 @@ function createWindow() {
 		show: false
 	});
 
-	if(settings.get('isMaximized')){
-		mainWindow.maximize();
-	}
+	// Set the main app menú
+	setupApplicationMenu(mainWindow);
 
-	if (process.platform === 'darwin') {
-		Menu.setApplicationMenu(Menu.buildFromTemplate(applicationMenu));
-	}
-
-	if (mode === 'development') {
-		// Set our above template to the Menu Object if we are in development mode, dont want users having the devtools.
-		//Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplateDev));
-		// If we are developers we might as well open the devtools by default.
-		mainWindow.webContents.openDevTools();
-	}
-
-	let watcher;
-
-    if (mode === 'development') {
-        watcher = require('chokidar').watch(path.join(__dirname, '../public/bundle.js'), { ignoreInitial: true });
-        watcher.on('change', () => {
-            mainWindow.reload();
-        });
-    }
-
+	// Load
 	mainWindow.loadURL(`file://${path.join(__dirname, '../public/index.html')}`);
 
-	mainWindow.on('ready-to-show', () => {
+	mainWindow.once('ready-to-show', () => {
 		mainWindow.show();
 		mainWindow.focus();
 	});
+
+	// Manage window settings
+	if(settings.get('isMaximized')){
+		mainWindow.maximize();
+	}
 
 	['resize', 'move', 'close'].forEach((e) => {
 		mainWindow.on(e, () => {
@@ -131,16 +56,31 @@ function createWindow() {
 		});
 	});
 
+	// Development stuff
+	let watcher;
+
+    if(isDev){
+		// If we are developers we might as well open the devtools by default.
+		mainWindow.webContents.openDevTools();
+
+		// Reload on change
+        watcher = require('chokidar').watch(path.join(__dirname, '../public/bundle.js'), { ignoreInitial: true });
+        watcher.on('change', () => {
+            mainWindow.reload();
+        });
+	}
+
+	// Windows events
 	mainWindow.on('close', (e) => {
 		if(mainWindow.isDocumentEdited()){
-			var choice = require('electron').dialog.showMessageBoxSync(this, {
+			var choice = require('electron').dialog.showMessageBoxSync(mainWindow, {
 				type: 'question',
 				buttons: ['Yes', 'No'],
 				title: 'Confirm',
 				message: 'Are you sure you want to quit?'
 			});
 
-			if(choice == 1) e.preventDefault();
+			if(choice === 1) e.preventDefault();
 		}
 	});
 
@@ -156,13 +96,13 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', createMainWindow);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
     // On macOS it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
+    if(process.platform !== 'darwin'){
         app.quit();
     }
 });
@@ -170,7 +110,7 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (mainWindow === null) {
-        createWindow();
+    if(mainWindow === null){
+        createMainWindow();
     }
 });

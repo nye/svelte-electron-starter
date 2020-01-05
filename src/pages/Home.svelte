@@ -11,6 +11,7 @@
 
 <style lang="scss">
 	main{
+		width: 100%;
 		padding: 20px;
 	}
 
